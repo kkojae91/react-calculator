@@ -1,5 +1,4 @@
 import React from "react";
-import CalculateButton from "./CalculateButton";
 
 export default function CalculateButtons({
   parentClassName,
@@ -12,15 +11,16 @@ export default function CalculateButtons({
     <div className={parentClassName} onClick={onClick}>
       {buttons.map((button) => {
         return (
-          <CalculateButton
+          <button
             key={button}
             className={
               isFocused(button)
                 ? `${childClassName}--focused`
                 : `${childClassName}`
             }
-            button={button}
-          />
+          >
+            {button}
+          </button>
         );
       })}
     </div>

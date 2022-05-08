@@ -5,27 +5,34 @@ import "./App.css";
 import CalculateButtons from "./Components/CalculateButtons";
 
 import { convertToLocaleString } from "./utils";
-import { SCREEN, EXPONENTIAL_LIMIT_POINT, BUTTON_TYPES } from "./constant";
+import {
+  SCREEN,
+  EXPONENTIAL_LIMIT_POINT,
+  BUTTON_TYPES,
+  LOCAL_STORAGE,
+} from "./constant";
+import TotalScreen from "./Components/TotalScreen";
 
 export default function App() {
-  const prevCalculateInfo = JSON.parse(
-    localStorage.getItem("calculateInfo")
-  ) ?? {
-    firstNumber: 0,
-    operation: "",
-    secondNumber: "",
-  };
+  const [calculateInfo, setCalculateInfo] = useState(
+    JSON.parse(localStorage.getItem(LOCAL_STORAGE.CALCULATE_KEY)) ?? {
+      firstNumber: 0,
+      operation: "",
+      secondNumber: "",
+    }
+  );
 
   useEffect(() => {
     window.addEventListener("beforeunload", confirmLeaveSite);
 
-    return window.removeEventListener("unload", confirmLeaveSite);
+    return () => window.removeEventListener("beforeunload", confirmLeaveSite);
   }, []);
 
-  const [calculateInfo, setCalculateInfo] = useState(prevCalculateInfo);
-
   useEffect(() => {
-    localStorage.setItem("calculateInfo", JSON.stringify(calculateInfo));
+    localStorage.setItem(
+      LOCAL_STORAGE.CALCULATE_KEY,
+      JSON.stringify(calculateInfo)
+    );
   }, [calculateInfo]);
 
   const confirmLeaveSite = (event) => {
@@ -66,7 +73,7 @@ export default function App() {
     }));
   };
 
-  const generateResultNumber = (number) => {
+  const convertToResultNumber = (number) => {
     if (
       String(number).length > SCREEN.MAX_TEXT_LENGTH &&
       Number.isFinite(number)
@@ -113,7 +120,7 @@ export default function App() {
       const resultNumber = calculateResultNumber();
 
       setCalculateInfo(() => ({
-        firstNumber: generateResultNumber(resultNumber),
+        firstNumber: convertToResultNumber(resultNumber),
         operation: target.textContent,
         secondNumber: "",
       }));
@@ -143,20 +150,11 @@ export default function App() {
 
   return (
     <div className="calculator">
-      <h1
-        className="total"
-        style={{
-          fontSize:
-            String(calculateInfo.secondNumber || calculateInfo.firstNumber)
-              .length > SCREEN.FONT_SIZE_SCALE_STANDARD
-              ? "3rem"
-              : "4rem",
-        }}
-      >
-        {convertToLocaleString(
-          calculateInfo.secondNumber || calculateInfo.firstNumber
-        )}
-      </h1>
+      <TotalScreen
+        firstNumber={calculateInfo.firstNumber}
+        secondNumber={calculateInfo.secondNumber}
+        convertToLocaleString={convertToLocaleString}
+      />
       <CalculateButtons
         onClick={handleDigitButton}
         parentClassName="digits flex"
